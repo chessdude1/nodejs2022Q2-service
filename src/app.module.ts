@@ -3,6 +3,6 @@ import { Module } from '@nestjs/common';
 
 @Module({
   imports: [],
-  controllers: [UserController]
+  controllers: [UserController],
 })
 export class AppModule {}
