@@ -1,4 +1,4 @@
-interface User {
+export interface IUser {
   id: string; // uuid v4
   login: string;
   password: string;
