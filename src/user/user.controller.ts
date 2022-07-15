@@ -1,15 +1,12 @@
 import { Controller, Get, HttpCode } from '@nestjs/common';
+import { UserService } from './user.service';
 
 @Controller()
 export class UserController {
-  private tasks: Array<{ id: number; task: string }> = [
-    { id: 1, task: 'first task' },
-    { id: 2, task: 'second task' },
-  ];
+  constructor(private userService: UserService) {}
 
-  @Get('1')
-  @HttpCode(206)
+  @Get()
   getTasks() {
-    return { result: 'All okkk', status: 200 };
+    return this.userService.getTask();
   }
 }
