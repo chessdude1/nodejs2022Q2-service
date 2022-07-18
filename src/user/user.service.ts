@@ -15,14 +15,14 @@ export class UserService {
   }
 
   getUser(id: number): IUser {
-    const findedUser = this.users.find((user) => +user.id === id);
+    if (!validate(String(id))) {
+      throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
+    }
+
+    const findedUser = this.users.find((user) => user.id === String(id));
 
     if (!findedUser) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
-    if (!validate(String(id))) {
-      throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
     return findedUser;
@@ -31,26 +31,33 @@ export class UserService {
   createUser(user: CreateUserDto): IUser {
     const newUser = new User(user.login, user.password);
     this.users.push({ ...newUser });
-    return newUser;
+    const userResponse = { ...newUser };
+
+    delete userResponse.password;
+
+    return userResponse;
   }
 
   updateUser(id: number, userData: UpdateUserDto): IUser {
-    const findedUser = this.users.find((user) => +user.id === id);
-
-    if (findedUser.password !== userData.oldPassword) {
-      throw new HttpException('User not found', HttpStatus.FORBIDDEN);
+    if (!validate(String(id))) {
+      throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
+
+    const findedUser = this.users.find((user) => user.id === String(id));
 
     if (!findedUser) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    if (!validate(String(id))) {
-      throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
+    if (findedUser.password !== userData.oldPassword) {
+      throw new HttpException(
+        'Old and new passwords doesnt match',
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     //delete user with put id
-    this.users.filter((user) => +user.id === id);
+    this.users = this.users.filter((user) => user.id !== String(id));
 
     // create user with updated data
     const userWithNewPassword = {
@@ -62,21 +69,24 @@ export class UserService {
 
     this.users.push(userWithNewPassword);
 
-    return userWithNewPassword;
+    const responseUserWithNewPassword = { ...userWithNewPassword };
+    delete responseUserWithNewPassword.password;
+
+    return responseUserWithNewPassword;
   }
 
   deleteUser(id: number) {
-    const findedUser = this.users.find((user) => +user.id === id);
+    if (!validate(String(id))) {
+      throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
+    }
+
+    const findedUser = this.users.find((user) => user.id === String(id));
 
     if (!findedUser) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    if (!validate(String(id))) {
-      throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
-    }
-
-    this.users.filter((user) => +user.id === id);
+    this.users = this.users.filter((user) => user.id !== String(id));
 
     return findedUser;
   }
