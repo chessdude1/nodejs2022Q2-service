@@ -4,6 +4,7 @@ import { InMemoryStore } from 'src/inMemoryDataBase/dataBase';
 import { Album } from './albums.entity';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { validate } from 'uuid';
+import { IAlbum } from './albums.interface';
 
 @Injectable()
 export class AlbumsService {

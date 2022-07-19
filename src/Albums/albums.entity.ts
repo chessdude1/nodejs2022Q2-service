@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { IAlbum } from './albums.interface';
 
 export class Album implements IAlbum {
   constructor(name: string, year: number, artistId: string | null) {

@@ -1,9 +1,9 @@
-import { Album } from 'src/Albums/albums.entity';
-import { Artist } from 'src/Artists/artists.entity';
-import { Track } from 'src/Tracks/tracks.entity';
+import { IArtist } from 'src/Artists/artists.interface';
+import { IAlbum } from 'src/Albums/albums.interface';
+import { ITrack } from 'src/Tracks/tracks.interface';
 
 export interface IFavorites {
-  artists: Artist[];
-  tracks: Track[];
-  albums: Album[];
+  artists: IArtist[];
+  tracks: ITrack[];
+  albums: IAlbum[];
 }

@@ -18,7 +18,7 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 
 @Controller('/artist')
 export class ArtistController {
-  constructor(private artistService: ArtistService) {}
+  constructor(public artistService: ArtistService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)

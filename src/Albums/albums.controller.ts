@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
+import { IAlbum } from './albums.interface';
 
 @Controller('/album')
 export class AlbumsController {
