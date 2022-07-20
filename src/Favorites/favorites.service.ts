@@ -9,7 +9,7 @@ import { IFavorites } from './favorites.interface';
 @Injectable()
 export class FavoritesService {
   getFavorites(): IFavorites {
-    return InMemoryStore.favourites;
+    return { ...InMemoryStore.favourites };
   }
 
   addTrackToFavorites(id: number): ITrack {
@@ -23,6 +23,12 @@ export class FavoritesService {
       (track) => track.id === String(id),
     );
 
+    const findedTrackToAddInFavoritesWithoutVersion = {
+      ...findedTrackToAddInFavorites,
+    };
+
+    delete findedTrackToAddInFavoritesWithoutVersion.version;
+
     if (!findedTrackToAddInFavorites) {
       throw new HttpException(
         'Track not found',
@@ -30,8 +36,11 @@ export class FavoritesService {
       );
     }
 
-    InMemoryStore.favourites.tracks.push(findedTrackToAddInFavorites);
-    return findedTrackToAddInFavorites;
+    InMemoryStore.favourites.tracks.push(
+      findedTrackToAddInFavoritesWithoutVersion,
+    );
+
+    return findedTrackToAddInFavoritesWithoutVersion;
   }
 
   addAlbumToFavorites(id: number): IAlbum {
