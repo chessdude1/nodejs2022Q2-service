@@ -8,10 +8,8 @@ import { IFavorites } from './favorites.interface';
 
 @Injectable()
 export class FavoritesService {
-  private favorites: IFavorites = InMemoryStore.favourites;
-
   getFavorites(): IFavorites {
-    return this.favorites;
+    return InMemoryStore.favourites;
   }
 
   addTrackToFavorites(id: number): ITrack {
@@ -32,7 +30,7 @@ export class FavoritesService {
       );
     }
 
-    this.favorites.tracks.push(findedTrackToAddInFavorites);
+    InMemoryStore.favourites.tracks.push(findedTrackToAddInFavorites);
     return findedTrackToAddInFavorites;
   }
 
@@ -54,7 +52,7 @@ export class FavoritesService {
       );
     }
 
-    this.favorites.albums.push(findedAlbumToAddInFavorites);
+    InMemoryStore.favourites.albums.push(findedAlbumToAddInFavorites);
 
     return findedAlbumToAddInFavorites;
   }
@@ -77,7 +75,7 @@ export class FavoritesService {
       );
     }
 
-    this.favorites.artists.push(findedArtistToAddInFavorites);
+    InMemoryStore.favourites.artists.push(findedArtistToAddInFavorites);
 
     return findedArtistToAddInFavorites;
   }
@@ -87,7 +85,7 @@ export class FavoritesService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedTrack = this.favorites.tracks.find(
+    const findedTrack = InMemoryStore.favourites.tracks.find(
       (track) => track.id === String(id),
     );
 
@@ -95,7 +93,7 @@ export class FavoritesService {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
     }
 
-    this.favorites.tracks = this.favorites.tracks.filter(
+    InMemoryStore.favourites.tracks = InMemoryStore.favourites.tracks.filter(
       (track) => track.id !== String(id),
     );
 
@@ -106,7 +104,7 @@ export class FavoritesService {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
-    const findedAlbum = this.favorites.albums.find(
+    const findedAlbum = InMemoryStore.favourites.albums.find(
       (album) => album.id === String(id),
     );
 
@@ -114,7 +112,7 @@ export class FavoritesService {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
     }
 
-    this.favorites.albums = this.favorites.albums.filter(
+    InMemoryStore.favourites.albums = InMemoryStore.favourites.albums.filter(
       (album) => album.id !== String(id),
     );
 
@@ -126,7 +124,7 @@ export class FavoritesService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedArtist = this.favorites.artists.find(
+    const findedArtist = InMemoryStore.favourites.artists.find(
       (artist) => artist.id === String(id),
     );
 
@@ -134,7 +132,7 @@ export class FavoritesService {
       throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
     }
 
-    this.favorites.artists = this.favorites.artists.filter(
+    InMemoryStore.favourites.artists = InMemoryStore.favourites.artists.filter(
       (artist) => artist.id !== String(id),
     );
 

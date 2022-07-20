@@ -8,10 +8,10 @@ import { validate } from 'uuid';
 
 @Injectable()
 export class TracksService {
-  private tracks: Array<ITrack> = InMemoryStore.tracks;
+  // private tracks: Array<ITrack> = InMemoryStore.tracks;
 
   getTracks(): Array<ITrack> {
-    return this.tracks;
+    return InMemoryStore.tracks;
   }
 
   getTrack(id: number): ITrack {
@@ -19,7 +19,9 @@ export class TracksService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedTrack = this.tracks.find((track) => track.id === String(id));
+    const findedTrack = InMemoryStore.tracks.find(
+      (track) => track.id === String(id),
+    );
 
     if (!findedTrack) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
@@ -36,7 +38,7 @@ export class TracksService {
       track.duration,
     );
 
-    this.tracks.push({ ...newTrack });
+    InMemoryStore.tracks.push({ ...newTrack });
 
     return newTrack;
   }
@@ -46,7 +48,9 @@ export class TracksService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedTrack = this.tracks.find((track) => track.id === String(id));
+    const findedTrack = InMemoryStore.tracks.find(
+      (track) => track.id === String(id),
+    );
 
     if (!findedTrack) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
@@ -57,9 +61,11 @@ export class TracksService {
       ...trackData,
     };
 
-    this.tracks = this.tracks.filter((track) => track.id !== String(id));
+    InMemoryStore.tracks = InMemoryStore.tracks.filter(
+      (track) => track.id !== String(id),
+    );
 
-    this.tracks.push(updatedTrack);
+    InMemoryStore.tracks.push(updatedTrack);
 
     return updatedTrack;
   }
@@ -68,9 +74,13 @@ export class TracksService {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
-    const findedTrack = this.tracks.find((track) => track.id === String(id));
+    const findedTrack = InMemoryStore.tracks.find(
+      (track) => track.id === String(id),
+    );
 
-    this.tracks = this.tracks.filter((track) => track.id !== String(id));
+    InMemoryStore.tracks = InMemoryStore.tracks.filter(
+      (track) => track.id !== String(id),
+    );
 
     if (!findedTrack) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);

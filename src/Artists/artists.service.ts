@@ -7,10 +7,8 @@ import { validate } from 'uuid';
 
 @Injectable()
 export class ArtistService {
-  private artists: Array<IArtist> = InMemoryStore.artists;
-
   getArtists(): Array<IArtist> {
-    return this.artists;
+    return InMemoryStore.artists;
   }
 
   getArtist(id: number): IArtist {
@@ -18,7 +16,7 @@ export class ArtistService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedArtist = this.artists.find(
+    const findedArtist = InMemoryStore.artists.find(
       (artist) => artist.id === String(id),
     );
 
@@ -31,7 +29,7 @@ export class ArtistService {
 
   createArtist(artistData: CreateArtistDto): IArtist {
     const newArtist = new Artist(artistData.name, artistData.grammy);
-    this.artists.push({ ...newArtist });
+    InMemoryStore.artists.push({ ...newArtist });
     return newArtist;
   }
 
@@ -40,7 +38,7 @@ export class ArtistService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedArtist = this.artists.find(
+    const findedArtist = InMemoryStore.artists.find(
       (artist) => artist.id === String(id),
     );
 
@@ -53,7 +51,7 @@ export class ArtistService {
       ...artistData,
     };
 
-    this.artists.push(updatedArtist);
+    InMemoryStore.artists.push(updatedArtist);
 
     return updatedArtist;
   }
@@ -64,11 +62,31 @@ export class ArtistService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedArtist = this.artists.find(
+    const findedArtist = InMemoryStore.artists.find(
       (artist) => artist.id === String(id),
     );
 
-    this.artists = this.artists.filter((artist) => artist.id !== String(id));
+    InMemoryStore.artists = InMemoryStore.artists.filter(
+      (artist) => artist.id !== String(id),
+    );
+
+    InMemoryStore.albums = InMemoryStore.albums.map((album) => {
+      if (album.artistId === String(id)) {
+        return { ...album, artistId: null };
+      }
+      return album;
+    });
+
+    InMemoryStore.favourites.artists = InMemoryStore.favourites.artists.filter(
+      (artist) => artist.id !== String(id),
+    );
+
+    InMemoryStore.tracks = InMemoryStore.tracks.map((track) => {
+      if (track.artistId === String(id)) {
+        return { ...track, artistId: null };
+      }
+      return track;
+    });
 
     if (!findedArtist) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);

@@ -8,10 +8,8 @@ import { IAlbum } from './albums.interface';
 
 @Injectable()
 export class AlbumsService {
-  private albums: Array<IAlbum> = InMemoryStore.albums;
-
   getAlbums(): Array<IAlbum> {
-    return this.albums;
+    return InMemoryStore.albums;
   }
 
   getAlbum(id: number): IAlbum {
@@ -19,7 +17,9 @@ export class AlbumsService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedAlbum = this.albums.find((album) => album.id === String(id));
+    const findedAlbum = InMemoryStore.albums.find(
+      (album) => album.id === String(id),
+    );
 
     if (!findedAlbum) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
@@ -35,7 +35,7 @@ export class AlbumsService {
       albumData.artistId ? albumData.artistId : null,
     );
 
-    this.albums.push({ ...newAlbum });
+    InMemoryStore.albums.push({ ...newAlbum });
 
     return newAlbum;
   }
@@ -45,7 +45,7 @@ export class AlbumsService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const albumBeforeUpdate = this.albums.find(
+    const albumBeforeUpdate = InMemoryStore.albums.find(
       (album) => album.id === String(id),
     );
 
@@ -53,11 +53,13 @@ export class AlbumsService {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
     }
 
-    this.albums = this.albums.filter((album) => album.id !== String(id));
+    InMemoryStore.albums = InMemoryStore.albums.filter(
+      (album) => album.id !== String(id),
+    );
 
     const albumDataAfterUpdate = { ...albumBeforeUpdate, ...updateAlbumData };
 
-    this.albums.push(albumDataAfterUpdate);
+    InMemoryStore.albums.push(albumDataAfterUpdate);
 
     return albumDataAfterUpdate;
   }
@@ -67,13 +69,29 @@ export class AlbumsService {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const albumForDelete = this.albums.find((album) => album.id === String(id));
+    const albumForDelete = InMemoryStore.albums.find(
+      (album) => album.id === String(id),
+    );
 
     if (!albumForDelete) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
     }
 
-    this.albums = this.albums.filter((album) => album.id !== String(id));
+    InMemoryStore.albums = InMemoryStore.albums.filter(
+      (album) => album.id !== String(id),
+    );
+
+    InMemoryStore.tracks = InMemoryStore.tracks.map((track) => {
+      if (track.albumId === String(id)) {
+        return { ...track, albumId: null };
+      }
+      return track;
+    });
+
+    InMemoryStore.favourites.tracks = InMemoryStore.favourites.tracks.filter(
+      (track) => track.id !== String(id),
+    );
+
     return albumForDelete;
   }
 }
