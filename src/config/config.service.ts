@@ -1,16 +1,10 @@
-import { DataSourceOptions } from 'typeorm';
+import * as Joi from 'joi';
 
-import 'dotenv/config';
-
-export default {
-  type: 'postgres',
-  host: process.env.POSTGRES_HOST,
-  port: parseInt(process.env.POSTGRES_PORT),
-  username: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
-  database: process.env.POSTGRES_DATABASE,
-  synchronize: false,
-  entities: ['dist/**/entities/*entity.js'],
-  migrations: ['dist/**/migration/*.js'],
-  migrationRun: true,
-} as DataSourceOptions;
+export const configValidationSchema = Joi.object({
+  PORT: Joi.number().required(),
+  DB_HOST: Joi.string().required(),
+  DB_PORT: Joi.number().default(5432).required(),
+  DB_USERNAME: Joi.string().required(),
+  DB_PASSWORD: Joi.string().required(),
+  DB_DATABASE: Joi.string().required(),
+});
