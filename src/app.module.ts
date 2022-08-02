@@ -1,4 +1,3 @@
-import { UserTestModule } from './UserTEST/userTest.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AlbumsModule } from './Albums/albums.module';
@@ -16,7 +15,6 @@ import { UserModule } from './user/user.module';
     ArtistsModule,
     AlbumsModule,
     FavoritesModule,
-    UserTestModule,
     ConfigModule.forRoot({
       envFilePath: ['proccess.env'],
       validationSchema: configValidationSchema,
