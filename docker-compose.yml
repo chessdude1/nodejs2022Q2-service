@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
       target: dev
     ports:
-      - 3000:3000
+      - 4000:4000
     volumes:
       - ./src:/app/src
     depends_on:

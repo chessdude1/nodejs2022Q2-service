@@ -13,4 +13,14 @@ export class User implements IUser {
   version = 1;
   createdAt = new Date().getTime();
   updatedAt = new Date().getTime();
+
+  toResponse = () => {
+    return {
+      id: this.id,
+      login: this.login,
+      version: this.version,
+      createdAt: Number(this.createdAt),
+      updatedAt: Number(this.updatedAt),
+    };
+  };
 }
