@@ -12,4 +12,10 @@ export class Album implements IAlbum {
   artistId: string;
   name: string;
   year: number;
+
+  toResponse = () => {
+    return {
+      ...this,
+    };
+  };
 }
