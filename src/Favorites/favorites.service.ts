@@ -28,11 +28,6 @@ export class FavoritesService {
       await this.favoriteRepository.save({
         id: '9b429e6c-323d-4ec4-b5d9-6fa09babe92d',
       });
-      return {
-        artists: [],
-        tracks: [],
-        albums: [],
-      };
     }
   }
 
@@ -41,7 +36,17 @@ export class FavoritesService {
       relations: ['artists', 'tracks', 'albums'],
     });
 
-    this.checkOnFirstItem(res[0]);
+    if (!res[0]) {
+      console.log(1);
+      await this.checkOnFirstItem(res[0]);
+      return {
+        artists: [],
+        tracks: [],
+        albums: [],
+      };
+    }
+
+    console.log(2);
 
     const lastUpdated = res[0];
 
@@ -66,7 +71,7 @@ export class FavoritesService {
       relations: ['artists', 'tracks', 'albums'],
     });
 
-    this.checkOnFirstItem(res[0]);
+    await this.checkOnFirstItem(res[0]);
 
     res[0].tracks.push(track);
     await this.favoriteRepository.save(res);
@@ -90,7 +95,7 @@ export class FavoritesService {
       relations: ['artists', 'tracks', 'albums'],
     });
 
-    this.checkOnFirstItem(res[0]);
+    await this.checkOnFirstItem(res[0]);
 
     res[0].albums.push(album);
     await this.favoriteRepository.save(res);
@@ -114,7 +119,7 @@ export class FavoritesService {
       relations: ['artists', 'tracks', 'albums'],
     });
 
-    this.checkOnFirstItem(res[0]);
+    await this.checkOnFirstItem(res[0]);
 
     res[0].artists.push(artist);
     await this.favoriteRepository.save(res);
@@ -130,7 +135,7 @@ export class FavoritesService {
       relations: ['artists', 'tracks', 'albums'],
     });
 
-    this.checkOnFirstItem(res[0]);
+    await this.checkOnFirstItem(res[0]);
 
     const findedTrack = res[0].tracks.find((track) => track.id === String(id));
 
@@ -154,7 +159,7 @@ export class FavoritesService {
       relations: ['artists', 'tracks', 'albums'],
     });
 
-    this.checkOnFirstItem(res[0]);
+    await this.checkOnFirstItem(res[0]);
 
     const findedAlbum = res[0].albums.find((album) => album.id === String(id));
 
@@ -178,7 +183,7 @@ export class FavoritesService {
       relations: ['artists', 'tracks', 'albums'],
     });
 
-    this.checkOnFirstItem(res[0]);
+    await this.checkOnFirstItem(res[0]);
 
     const findedArtist = res[0].artists.find(
       (artist) => artist.id === String(id),
