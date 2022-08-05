@@ -37,7 +37,6 @@ export class FavoritesService {
     });
 
     if (!res[0]) {
-      console.log(1);
       await this.checkOnFirstItem(res[0]);
       return {
         artists: [],
@@ -45,8 +44,6 @@ export class FavoritesService {
         albums: [],
       };
     }
-
-    console.log(2);
 
     const lastUpdated = res[0];
 
