@@ -22,7 +22,7 @@ export class AlbumsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAlbums(): Array<IAlbum> {
+  getAlbums(): Promise<Array<IAlbum>> {
     return this.albumsService.getAlbums();
   }
 

@@ -20,4 +20,10 @@ export class Track implements ITrack {
   albumId: string;
   duration: number;
   version = 1;
+
+  toResponse = () => {
+    return {
+      ...this,
+    };
+  };
 }
