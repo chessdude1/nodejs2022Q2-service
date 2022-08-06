@@ -6,12 +6,18 @@ import { validate } from 'uuid';
 import { ArtistDbEntity } from './entities/artistDbEntity.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TrackDbEntity } from 'src/Tracks/entities/trackDb.entity';
+import { AlbumDbEntity } from 'src/Albums/entities/albumDb.entity';
 
 @Injectable()
 export class ArtistService {
   constructor(
     @InjectRepository(ArtistDbEntity)
     private artistRepository: Repository<ArtistDbEntity>,
+    @InjectRepository(TrackDbEntity)
+    private trackRepository: Repository<TrackDbEntity>,
+    @InjectRepository(AlbumDbEntity)
+    private albumRepository: Repository<AlbumDbEntity>,
   ) {}
 
   async getArtists(): Promise<Array<IArtist>> {
@@ -82,6 +88,32 @@ export class ArtistService {
 
     if (!findedArtist) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
+    }
+
+    const findedAlbum = await this.albumRepository.findOne({
+      where: {
+        artistId: String(id),
+      },
+    });
+
+    if (findedAlbum) {
+      findedAlbum.artistId = null;
+
+      await this.albumRepository.save(findedAlbum);
+    }
+
+    const findedTrack = await this.trackRepository.findOne({
+      where: {
+        artistId: String(id),
+      },
+    });
+
+    if (findedTrack) {
+      findedTrack.albumId = null;
+
+      findedTrack.artistId = null;
+
+      await this.trackRepository.save(findedTrack);
     }
 
     await this.artistRepository.remove(findedArtist);

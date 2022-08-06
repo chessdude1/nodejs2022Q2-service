@@ -1,13 +1,6 @@
 import { Artist } from 'src/Artists/artists.entity';
 import { ArtistDbEntity } from 'src/Artists/entities/artistDbEntity.entity';
-import { FavoritesDbEntity } from 'src/Favorites/entities/favoriteDbEntity.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('albums')
 export class AlbumDbEntity {
@@ -25,12 +18,6 @@ export class AlbumDbEntity {
     type: 'uuid',
   })
   artistId: string | null;
-
-  @ManyToOne(() => ArtistDbEntity, (artist) => artist.albums, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  artist: Artist;
 
   toResponse = () => {
     return {

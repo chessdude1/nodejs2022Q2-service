@@ -26,12 +26,6 @@ export class TrackDbEntity {
   @Column()
   duration: number;
 
-  @ManyToOne(() => ArtistDbEntity, (artist) => artist.albums, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  artist: Artist;
-
   toResponse = () => {
     return {
       ...this,
