@@ -35,6 +35,23 @@ To run all tests without authorization
 npm run test
 ```
 
+## How to run app
+1. Install docker
+2. go to root directory of the project
+3. ```docker-compose up```
+
+Alternative solution: pull images from dockerhub. 
+https://hub.docker.com/repository/docker/chessdude1/nodejs2022q2-service_app
+
+## Pgadmin
+  Project have postgres admin panel
+
+1. Go to localhost:5050 (by default)
+2. email: admin@admin.com, password: admin
+3. create new server with any name, hostname: nodejs2022q2-service_db_1, username: postgres, password : postgres
+
+
+
 To run only one of all test suites
 
 ```
