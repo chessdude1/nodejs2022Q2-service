@@ -7,12 +7,15 @@ import { IAlbum } from './albums.interface';
 import { AlbumDbEntity } from './entities/albumDb.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { TrackDbEntity } from 'src/Tracks/entities/trackDb.entity';
 
 @Injectable()
 export class AlbumsService {
   constructor(
     @InjectRepository(AlbumDbEntity)
     private albumRepository: Repository<AlbumDbEntity>,
+    @InjectRepository(TrackDbEntity)
+    private trackRepository: Repository<TrackDbEntity>,
   ) {}
 
   async getAlbums(): Promise<Array<IAlbum>> {
@@ -47,12 +50,15 @@ export class AlbumsService {
     return (await this.albumRepository.save({ ...newAlbum })).toResponse();
   }
 
-  updateAlbum(id: number, updateAlbumData: UpdateAlbumDto): Promise<IAlbum> {
+  async updateAlbum(
+    id: number,
+    updateAlbumData: UpdateAlbumDto,
+  ): Promise<IAlbum> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const albumBeforeUpdate = this.albumRepository.findOne({
+    const albumBeforeUpdate = await this.albumRepository.findOne({
       where: {
         id: String(id),
       },
@@ -82,6 +88,17 @@ export class AlbumsService {
 
     if (!albumForDelete) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
+    }
+
+    const track = await this.trackRepository.findOne({
+      where: {
+        albumId: String(id),
+      },
+    });
+
+    if (track) {
+      track.albumId = null;
+      this.trackRepository.save(track);
     }
 
     await this.albumRepository.remove(albumForDelete);

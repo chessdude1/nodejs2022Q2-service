@@ -14,18 +14,6 @@ export class ArtistDbEntity {
   @Column()
   grammy: boolean;
 
-  @OneToMany(() => AlbumDbEntity, (album) => album.artist, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  albums: Album[];
-
-  @OneToMany(() => AlbumDbEntity, (track) => track.artist, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  tracks: Track[];
-
   toResponse = () => {
     return {
       ...this,
