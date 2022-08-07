@@ -33,7 +33,7 @@ services:
     image: dpage/pgadmin4
     restart: always
     ports:
-      - ${DB_ADMIN_PORT_DOCKER}:${DB_ADMIN_PORT_DOCKER}
+      - ${DB_ADMIN_PORT_DOCKER}:${DB_ADMIN_PORT_DOCKER_ADDITIONAL}
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
