@@ -9,14 +9,17 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { IArtist } from './artists.interface';
 import { UpdateArtistDto } from './dto/update-artist.dto';
+import { AuthGuard } from 'src/Auth/authGuard';
 
 @Controller('/artist')
+@UseGuards(AuthGuard)
 export class ArtistController {
   constructor(public artistService: ArtistService) {}
 

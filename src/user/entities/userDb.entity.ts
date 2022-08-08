@@ -14,6 +14,9 @@ export class UserDbEntity {
   @Column()
   version: number;
 
+  @Column({ nullable: true })
+  refreshToken: string;
+
   @Column('bigint')
   createdAt: number;
 

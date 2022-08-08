@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { FavoritesModule } from './Favorites/favorites.module';
 import { TracksModule } from './Tracks/tracks.module';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './Auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserModule } from './user/user.module';
     ArtistsModule,
     AlbumsModule,
     FavoritesModule,
+    AuthModule,
     ConfigModule.forRoot({
       envFilePath: ['proccess.env'],
       validationSchema: configValidationSchema,

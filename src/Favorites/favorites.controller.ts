@@ -7,13 +7,16 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { IFavorites } from './favorites.interface';
 import { ITrack } from 'src/Tracks/tracks.interface';
 import { IAlbum } from 'src/Albums/albums.interface';
 import { IArtist } from 'src/Artists/artists.interface';
+import { AuthGuard } from 'src/Auth/authGuard';
 
 @Controller('/favs')
+@UseGuards(AuthGuard)
 export class FavoritesController {
   constructor(private favoritesService: FavoritesService) {}
 

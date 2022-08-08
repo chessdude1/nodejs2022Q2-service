@@ -9,14 +9,17 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { IUser } from './user.interface';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from 'src/Auth/authGuard';
 
 @Controller('/user')
+@UseGuards(AuthGuard)
 export class UserController {
   constructor(private userService: UserService) {}
 

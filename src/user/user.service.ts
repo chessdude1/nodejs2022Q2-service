@@ -7,6 +7,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDbEntity } from './entities/userDb.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { compareSync, hashSync } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -40,7 +41,9 @@ export class UserService {
   async createUser(user: CreateUserDto): Promise<Omit<IUser, 'password'>> {
     const newUser = new User(user.login, user.password);
 
-    return (await this.userRepository.save({ ...newUser })).toResponse();
+    await this.userRepository.save(newUser.createNewUserWitHashedPassword());
+
+    return newUser.toResponse();
   }
 
   async updateUser(
@@ -61,14 +64,24 @@ export class UserService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    if (userToUpdate.password !== userData.oldPassword) {
+    const resultOfPasswordCompare = compareSync(
+      userData.oldPassword,
+      userToUpdate.password,
+    );
+
+    if (!resultOfPasswordCompare) {
       throw new HttpException(
         'Old and new passwords doesnt match',
         HttpStatus.FORBIDDEN,
       );
     }
 
-    userToUpdate.password = userData.newPassword;
+    const hashedPassword = hashSync(
+      userData.newPassword,
+      +process.env.CRYPT_SALT,
+    );
+
+    userToUpdate.password = hashedPassword;
     userToUpdate.version += 1;
 
     userToUpdate.updatedAt = +new Date();
