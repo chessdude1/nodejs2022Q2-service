@@ -1,7 +1,4 @@
-import { Artist } from 'src/Artists/artists.entity';
-import { ArtistDbEntity } from 'src/Artists/entities/artistDbEntity.entity';
-
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('tracks')
 export class TrackDbEntity {
