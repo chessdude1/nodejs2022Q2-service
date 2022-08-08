@@ -1,25 +1,35 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InMemoryStore } from 'src/inMemoryDataBase/dataBase';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { IUser } from './user.interface';
 import { validate } from 'uuid';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDbEntity } from './entities/userDb.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { compareSync, hashSync } from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  private users: Array<IUser> = InMemoryStore.users;
+  constructor(
+    @InjectRepository(UserDbEntity)
+    private userRepository: Repository<UserDbEntity>,
+  ) {}
 
-  getUsers(): Array<IUser> {
-    return this.users;
+  async getUsers(): Promise<IUser[]> {
+    return await this.userRepository.find();
   }
 
-  getUser(id: number): IUser {
+  async getUser(id: number): Promise<Omit<IUser, 'password'>> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedUser = this.users.find((user) => user.id === String(id));
+    const findedUser = await this.userRepository.findOne({
+      where: {
+        id: String(id),
+      },
+    });
 
     if (!findedUser) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -28,66 +38,75 @@ export class UserService {
     return findedUser;
   }
 
-  createUser(user: CreateUserDto): IUser {
+  async createUser(user: CreateUserDto): Promise<Omit<IUser, 'password'>> {
     const newUser = new User(user.login, user.password);
-    this.users.push({ ...newUser });
-    const userResponse = { ...newUser };
 
-    delete userResponse.password;
+    await this.userRepository.save(newUser.createNewUserWitHashedPassword());
 
-    return userResponse;
+    return newUser.toResponse();
   }
 
-  updateUser(id: number, userData: UpdateUserDto): IUser {
+  async updateUser(
+    id: number,
+    userData: UpdateUserDto,
+  ): Promise<Omit<IUser, 'password'>> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedUser = this.users.find((user) => user.id === String(id));
+    const userToUpdate = await this.userRepository.findOne({
+      where: {
+        id: String(id),
+      },
+    });
 
-    if (!findedUser) {
+    if (!userToUpdate) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    if (findedUser.password !== userData.oldPassword) {
+    const resultOfPasswordCompare = compareSync(
+      userData.oldPassword,
+      userToUpdate.password,
+    );
+
+    if (!resultOfPasswordCompare) {
       throw new HttpException(
         'Old and new passwords doesnt match',
         HttpStatus.FORBIDDEN,
       );
     }
 
-    //delete user with put id
-    this.users = this.users.filter((user) => user.id !== String(id));
+    const hashedPassword = hashSync(
+      userData.newPassword,
+      +process.env.CRYPT_SALT,
+    );
 
-    // create user with updated data
-    const userWithNewPassword = {
-      ...findedUser,
-      password: userData.newPassword,
-      updatedAt: new Date().getTime(),
-      version: findedUser.version + 1,
-    };
+    userToUpdate.password = hashedPassword;
+    userToUpdate.version += 1;
 
-    this.users.push(userWithNewPassword);
+    userToUpdate.updatedAt = +new Date();
 
-    const responseUserWithNewPassword = { ...userWithNewPassword };
-    delete responseUserWithNewPassword.password;
-
-    return responseUserWithNewPassword;
+    await this.userRepository.save(userToUpdate);
+    return userToUpdate.toResponse();
   }
 
-  deleteUser(id: number) {
+  async deleteUser(id: number) {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedUser = this.users.find((user) => user.id === String(id));
+    const userToRemove = await this.userRepository.findOne({
+      where: {
+        id: String(id),
+      },
+    });
 
-    if (!findedUser) {
+    if (!userToRemove) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    this.users = this.users.filter((user) => user.id !== String(id));
+    await this.userRepository.remove(userToRemove);
 
-    return findedUser;
+    return userToRemove;
   }
 }

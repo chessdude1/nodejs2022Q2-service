@@ -9,33 +9,36 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { IArtist } from './artists.interface';
 import { UpdateArtistDto } from './dto/update-artist.dto';
+import { AuthGuard } from 'src/Auth/authGuard';
 
 @Controller('/artist')
+@UseGuards(AuthGuard)
 export class ArtistController {
   constructor(public artistService: ArtistService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getArtists(): Array<IArtist> {
+  getArtists(): Promise<Array<IArtist>> {
     return this.artistService.getArtists();
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  getArtist(@Param('id') id: number): IArtist {
+  getArtist(@Param('id') id: number): Promise<IArtist> {
     return this.artistService.getArtist(id);
   }
 
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  createArtist(@Body() artistData: CreateArtistDto): IArtist {
+  createArtist(@Body() artistData: CreateArtistDto): Promise<IArtist> {
     return this.artistService.createArtist(artistData);
   }
 
@@ -45,13 +48,13 @@ export class ArtistController {
   updateArtist(
     @Param('id') id: number,
     @Body() updateArtistData: UpdateArtistDto,
-  ): IArtist {
+  ): Promise<IArtist> {
     return this.artistService.updateArtist(id, updateArtistData);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  deleteArtist(@Param('id') id: number): IArtist {
+  deleteArtist(@Param('id') id: number): Promise<IArtist> {
     return this.artistService.deleteArtist(id);
   }
 }

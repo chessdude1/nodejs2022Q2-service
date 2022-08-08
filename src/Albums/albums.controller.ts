@@ -9,20 +9,23 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { IAlbum } from './albums.interface';
+import { AuthGuard } from 'src/Auth/authGuard';
 
 @Controller('/album')
+@UseGuards(AuthGuard)
 export class AlbumsController {
   constructor(private albumsService: AlbumsService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAlbums(): Array<IAlbum> {
+  getAlbums(): Promise<Array<IAlbum>> {
     return this.albumsService.getAlbums();
   }
 

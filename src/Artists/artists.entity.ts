@@ -10,4 +10,10 @@ export class Artist implements IArtist {
   id = uuidv4();
   name: string;
   grammy: boolean;
+
+  toResponse = () => {
+    return {
+      ...this,
+    };
+  };
 }

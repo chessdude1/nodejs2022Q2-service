@@ -9,14 +9,17 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { IUser } from './user.interface';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from 'src/Auth/authGuard';
 
 @Controller('/user')
+@UseGuards(AuthGuard)
 export class UserController {
   constructor(private userService: UserService) {}
 
@@ -35,20 +38,23 @@ export class UserController {
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  createUser(@Body() user: CreateUserDto): IUser {
+  createUser(@Body() user: CreateUserDto): Promise<Omit<IUser, 'password'>> {
     return this.userService.createUser(user);
   }
 
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
   @Put(':id')
-  updateUser(@Param('id') id: number, @Body() userData: UpdateUserDto): IUser {
+  updateUser(
+    @Param('id') id: number,
+    @Body() userData: UpdateUserDto,
+  ): Promise<Omit<IUser, 'password'>> {
     return this.userService.updateUser(id, userData);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  deleteUser(@Param('id') id: number): IUser {
+  deleteUser(@Param('id') id: number): Promise<Omit<IUser, 'password'>> {
     return this.userService.deleteUser(id);
   }
 }

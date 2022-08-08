@@ -9,14 +9,17 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { ITrack } from './tracks.interface';
 import { TracksService } from './tracks.service';
 import { UpdateTrackDto } from './dto/update-track.dto';
+import { AuthGuard } from 'src/Auth/authGuard';
 
 @Controller('/track')
+@UseGuards(AuthGuard)
 export class TracksController {
   constructor(private trackService: TracksService) {}
 
@@ -35,7 +38,7 @@ export class TracksController {
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  createTrack(@Body() track: CreateTrackDto): ITrack {
+  createTrack(@Body() track: CreateTrackDto): Promise<ITrack> {
     return this.trackService.createTrack(track);
   }
 
@@ -45,14 +48,14 @@ export class TracksController {
   updateTrack(
     @Param('id') id: number,
     @Body() trackData: UpdateTrackDto,
-  ): ITrack {
+  ): Promise<ITrack> {
     return this.trackService.updateTrack(id, trackData);
   }
 
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  deleteTrack(@Param('id') id: number): ITrack {
+  deleteTrack(@Param('id') id: number): Promise<ITrack> {
     return this.trackService.deleteTrack(id);
   }
 }
