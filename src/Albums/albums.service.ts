@@ -1,25 +1,37 @@
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InMemoryStore } from 'src/inMemoryDataBase/dataBase';
 import { Album } from './albums.entity';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { validate } from 'uuid';
 import { IAlbum } from './albums.interface';
+import { AlbumDbEntity } from './entities/albumDb.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { TrackDbEntity } from 'src/Tracks/entities/trackDb.entity';
 
 @Injectable()
 export class AlbumsService {
-  getAlbums(): Array<IAlbum> {
-    return InMemoryStore.albums;
+  constructor(
+    @InjectRepository(AlbumDbEntity)
+    private albumRepository: Repository<AlbumDbEntity>,
+    @InjectRepository(TrackDbEntity)
+    private trackRepository: Repository<TrackDbEntity>,
+  ) {}
+
+  async getAlbums(): Promise<Array<IAlbum>> {
+    return await this.albumRepository.find();
   }
 
-  getAlbum(id: number): IAlbum {
+  async getAlbum(id: number): Promise<IAlbum> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedAlbum = InMemoryStore.albums.find(
-      (album) => album.id === String(id),
-    );
+    const findedAlbum = await this.albumRepository.findOne({
+      where: {
+        id: String(id),
+      },
+    });
 
     if (!findedAlbum) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
@@ -28,70 +40,69 @@ export class AlbumsService {
     return findedAlbum;
   }
 
-  createAlbum(albumData: CreateAlbumDto): IAlbum {
+  async createAlbum(albumData: CreateAlbumDto): Promise<IAlbum> {
     const newAlbum = new Album(
       albumData.name,
       albumData.year,
       albumData.artistId ? albumData.artistId : null,
     );
 
-    InMemoryStore.albums.push({ ...newAlbum });
-
-    return newAlbum;
+    return (await this.albumRepository.save({ ...newAlbum })).toResponse();
   }
 
-  updateAlbum(id: number, updateAlbumData: UpdateAlbumDto): IAlbum {
+  async updateAlbum(
+    id: number,
+    updateAlbumData: UpdateAlbumDto,
+  ): Promise<IAlbum> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const albumBeforeUpdate = InMemoryStore.albums.find(
-      (album) => album.id === String(id),
-    );
+    const albumBeforeUpdate = await this.albumRepository.findOne({
+      where: {
+        id: String(id),
+      },
+    });
 
     if (!albumBeforeUpdate) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
     }
 
-    InMemoryStore.albums = InMemoryStore.albums.filter(
-      (album) => album.id !== String(id),
-    );
-
     const albumDataAfterUpdate = { ...albumBeforeUpdate, ...updateAlbumData };
 
-    InMemoryStore.albums.push(albumDataAfterUpdate);
+    this.albumRepository.save(albumDataAfterUpdate);
 
     return albumDataAfterUpdate;
   }
 
-  deleteAlbum(id: number): IAlbum {
+  async deleteAlbum(id: number): Promise<IAlbum> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const albumForDelete = InMemoryStore.albums.find(
-      (album) => album.id === String(id),
-    );
+    const albumForDelete = await this.albumRepository.findOne({
+      where: {
+        id: String(id),
+      },
+    });
 
     if (!albumForDelete) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
     }
 
-    InMemoryStore.albums = InMemoryStore.albums.filter(
-      (album) => album.id !== String(id),
-    );
-
-    InMemoryStore.tracks = InMemoryStore.tracks.map((track) => {
-      if (track.albumId === String(id)) {
-        return { ...track, albumId: null };
-      }
-      return track;
+    const track = await this.trackRepository.findOne({
+      where: {
+        albumId: String(id),
+      },
     });
 
-    InMemoryStore.favourites.tracks = InMemoryStore.favourites.tracks.filter(
-      (track) => track.id !== String(id),
-    );
+    if (track) {
+      track.albumId = null;
+      this.trackRepository.save(track);
+    }
 
-    return albumForDelete;
+    await this.albumRepository.remove(albumForDelete);
+
+    return (await albumForDelete).toResponse();
   }
 }

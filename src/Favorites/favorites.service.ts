@@ -1,139 +1,188 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { IAlbum } from 'src/Albums/albums.interface';
+import { AlbumDbEntity } from 'src/Albums/entities/albumDb.entity';
 import { IArtist } from 'src/Artists/artists.interface';
-import { InMemoryStore } from 'src/inMemoryDataBase/dataBase';
+import { ArtistDbEntity } from 'src/Artists/entities/artistDbEntity.entity';
+import { TrackDbEntity } from 'src/Tracks/entities/trackDb.entity';
 import { ITrack } from 'src/Tracks/tracks.interface';
+import { EntityNotFoundError, Repository } from 'typeorm';
 import { validate } from 'uuid';
-import { IFavorites } from './favorites.interface';
+import { FavoritesDbEntity } from './entities/favoriteDbEntity.entity';
 
 @Injectable()
 export class FavoritesService {
-  getFavorites(): IFavorites {
-    return { ...InMemoryStore.favourites };
+  constructor(
+    @InjectRepository(ArtistDbEntity)
+    private artistRepository: Repository<ArtistDbEntity>,
+    @InjectRepository(TrackDbEntity)
+    private trackRepository: Repository<TrackDbEntity>,
+    @InjectRepository(AlbumDbEntity)
+    private albumRepository: Repository<AlbumDbEntity>,
+    @InjectRepository(FavoritesDbEntity)
+    private favoriteRepository: Repository<FavoritesDbEntity>,
+  ) {}
+
+  async checkOnFirstItem(zeroElem) {
+    if (!zeroElem) {
+      await this.favoriteRepository.save({
+        id: '9b429e6c-323d-4ec4-b5d9-6fa09babe92d',
+      });
+    }
   }
 
-  addTrackToFavorites(id: number): ITrack {
-    const store = { ...InMemoryStore };
+  async getFavorites(): Promise<any> {
+    const res = await this.favoriteRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
 
+    if (!res[0]) {
+      await this.checkOnFirstItem(res[0]);
+      return {
+        artists: [],
+        tracks: [],
+        albums: [],
+      };
+    }
+
+    const lastUpdated = res[0];
+
+    delete lastUpdated.id;
+    return lastUpdated;
+  }
+
+  async addTrackToFavorites(id: number): Promise<ITrack> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
+    const track = await this.trackRepository.findOne(id);
 
-    const findedTrackToAddInFavorites = store.tracks.find(
-      (track) => track.id === String(id),
-    );
-
-    const findedTrackToAddInFavoritesWithoutVersion = {
-      ...findedTrackToAddInFavorites,
-    };
-
-    delete findedTrackToAddInFavoritesWithoutVersion.version;
-
-    if (!findedTrackToAddInFavorites) {
+    if (!track) {
       throw new HttpException(
         'Track not found',
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
 
-    InMemoryStore.favourites.tracks.push(
-      findedTrackToAddInFavoritesWithoutVersion,
-    );
+    const res = await this.favoriteRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
 
-    return findedTrackToAddInFavoritesWithoutVersion;
+    await this.checkOnFirstItem(res[0]);
+
+    res[0].tracks.push(track);
+    await this.favoriteRepository.save(res);
+    return track;
   }
 
-  addAlbumToFavorites(id: number): IAlbum {
-    const store = { ...InMemoryStore };
-
+  async addAlbumToFavorites(id: number): Promise<IAlbum> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
+    const album = await this.albumRepository.findOne(id);
 
-    const findedAlbumToAddInFavorites = store.albums.find(
-      (album) => album.id === String(id),
-    );
-
-    if (!findedAlbumToAddInFavorites) {
+    if (!album) {
       throw new HttpException(
         'Album not found',
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
 
-    InMemoryStore.favourites.albums.push(findedAlbumToAddInFavorites);
+    const res = await this.favoriteRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
 
-    return findedAlbumToAddInFavorites;
+    await this.checkOnFirstItem(res[0]);
+
+    res[0].albums.push(album);
+    await this.favoriteRepository.save(res);
+    return album;
   }
 
-  addArtistToFavorites(id: number): IArtist {
-    const store = { ...InMemoryStore };
-
+  async addArtistToFavorites(id: number): Promise<IArtist> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
+    const artist = await this.artistRepository.findOne(id);
 
-    const findedArtistToAddInFavorites = store.artists.find(
-      (artist) => artist.id === String(id),
-    );
-
-    if (!findedArtistToAddInFavorites) {
+    if (!artist) {
       throw new HttpException(
         'Artist not found',
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
 
-    InMemoryStore.favourites.artists.push(findedArtistToAddInFavorites);
+    const res = await this.favoriteRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
 
-    return findedArtistToAddInFavorites;
+    await this.checkOnFirstItem(res[0]);
+
+    res[0].artists.push(artist);
+    await this.favoriteRepository.save(res);
+    return artist;
   }
 
-  deleteTrackFromFavorites(id: number): ITrack {
+  async deleteTrackFromFavorites(id: number): Promise<ITrack> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedTrack = InMemoryStore.favourites.tracks.find(
-      (track) => track.id === String(id),
-    );
+    const res = await this.favoriteRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
+
+    await this.checkOnFirstItem(res[0]);
+
+    const findedTrack = res[0].tracks.find((track) => track.id === String(id));
 
     if (!findedTrack) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
     }
 
-    InMemoryStore.favourites.tracks = InMemoryStore.favourites.tracks.filter(
-      (track) => track.id !== String(id),
-    );
+    res[0].tracks = res[0].tracks.filter((artist) => artist.id !== String(id));
+
+    await this.favoriteRepository.save(res);
 
     return findedTrack;
   }
 
-  deleteAlbumFromFavorites(id: number): IAlbum {
+  async deleteAlbumFromFavorites(id: number): Promise<IAlbum> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
-    const findedAlbum = InMemoryStore.favourites.albums.find(
-      (album) => album.id === String(id),
-    );
+
+    const res = await this.favoriteRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
+
+    await this.checkOnFirstItem(res[0]);
+
+    const findedAlbum = res[0].albums.find((album) => album.id === String(id));
 
     if (!findedAlbum) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
     }
 
-    InMemoryStore.favourites.albums = InMemoryStore.favourites.albums.filter(
-      (album) => album.id !== String(id),
-    );
+    res[0].albums = res[0].albums.filter((artist) => artist.id !== String(id));
+
+    await this.favoriteRepository.save(res);
 
     return findedAlbum;
   }
 
-  deleteArtistFromFavorites(id: number): IArtist {
+  async deleteArtistFromFavorites(id: number): Promise<IArtist> {
     if (!validate(String(id))) {
       throw new HttpException('Not valid uuid', HttpStatus.BAD_REQUEST);
     }
 
-    const findedArtist = InMemoryStore.favourites.artists.find(
+    const res = await this.favoriteRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
+
+    await this.checkOnFirstItem(res[0]);
+
+    const findedArtist = res[0].artists.find(
       (artist) => artist.id === String(id),
     );
 
@@ -141,9 +190,11 @@ export class FavoritesService {
       throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
     }
 
-    InMemoryStore.favourites.artists = InMemoryStore.favourites.artists.filter(
+    res[0].artists = res[0].artists.filter(
       (artist) => artist.id !== String(id),
     );
+
+    await this.favoriteRepository.save(res);
 
     return findedArtist;
   }
